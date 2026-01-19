@@ -3,6 +3,9 @@
 ## What this is
 A self-initiated Quality Engineering project that simulates a banking-style reporting pipeline and validates reporting accuracy end-to-end.
 
+## Architecture
+transactions.csv → transactions_raw (SQLite) → transactions_validated → {daily_summary, account_summary} → CSV reports → Power BI dashboard
+
 ## Pipeline
 1) Ingest raw transactions (CSV → SQLite staging table)
 2) Create validated layer (filters invalid records)
@@ -21,6 +24,10 @@ A self-initiated Quality Engineering project that simulates a banking-style repo
   - by date
   - by account
 
+## Validation Results
+- Reconciliation PASS (Totals)
+- Reconciliation PASS (By Date)
+- Reconciliation PASS (By Account)
 
 ## Key Features
 - Raw transaction ingestion into a staging table
@@ -48,6 +55,9 @@ A self-initiated Quality Engineering project that simulates a banking-style repo
 - SQLite
 - Power BI
 - CSV-based reporting
+
+## What I Learned
+Designing QA checks for reporting pipelines, implementing reconciliation to ensure correctness across layers, and validating BI outputs against trusted aggregates.
 
 ## How to Run
 ```bash
