@@ -53,8 +53,6 @@ transactions.csv
 - Data quality validation prior to reporting
 - Multi-dimensional reporting (time-based and account-based)
 - Automated reconciliation with PASS/FAIL outcomes
-- Report export for BI tools
-- Dashboard validation using Power BI
 
 ---
 
@@ -71,13 +69,12 @@ transactions.csv
 - **Python**
 - **SQL**
 - **SQLite**
-- **Power BI**
 - **CSV-based reporting**
 
 ---
 
 ## What I Learned
-Designing QA checks for reporting pipelines, implementing reconciliation to ensure correctness across multiple dimensions, and validating BI outputs against trusted aggregates.
+Designing QA checks for reporting pipelines, implementing reconciliation to ensure correctness across multiple dimensions.
 
 ---
 
