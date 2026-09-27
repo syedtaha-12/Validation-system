@@ -35,6 +35,7 @@ transactions.csv
 ### Data Quality
 - **Completeness:** row counts after ingestion (`verify_db.py`) and raw vs. validated counts (`create_validated_view.py`)
 - **Validity:** `NULL` and negative amounts are filtered out of the validated layer
+- **Integrity:** duplicate `transaction_id`s are detected and removed
 
 ### Reporting Accuracy (Reconciliation)
 | ID | Check | Script |
@@ -51,7 +52,7 @@ transactions.csv
 
 ## Validation Results
 
-On the sample dataset (6 raw rows → 4 validated rows):
+On the sample dataset (6 raw rows → 3 validated rows):
 
 - ✅ REC-002 / REC-003: Overall totals and counts: PASS
 - ✅ REC-004: By date: PASS
@@ -62,8 +63,8 @@ On the sample dataset (6 raw rows → 4 validated rows):
 
 ## Known Limitations & Next Steps
 
-- **Duplicates are not removed yet.** The sample data contains a duplicate transaction (`transaction_id` 1002). It passes validation and is counted twice in `account_summary` (A002 shows 251.00 instead of 125.50). Reconciliation still passes because it only compares the report against the validated layer, so it cannot catch errors already in that layer. Planned fix: add a duplicate check on `transaction_id` and keep one row per ID in the validated view.
-- **Re-running `create_db.py` loads the data again**, which duplicates every row. Planned fix: clear the staging table before loading, or make `transaction_id` a primary key.
+- ~~Duplicates are not removed~~ **Fixed:** the validated view now keeps one row per `transaction_id`, and a check prints any duplicate IDs found in the raw data.
+- **Re-running `create_db.py` loads the data again**, which duplicates every row in the raw table. The validated view still keeps one row per `transaction_id`, and the duplicate check reports the repeated IDs.
 - **Negative amounts are treated as invalid.** This is a business rule chosen for this dataset. In a real bank, negatives could be valid withdrawals or refunds, so this rule would be confirmed with the business team.
 - **Floating-point amounts** are compared with `==`. For real financial data, amounts should be stored as integer cents or decimals.
 
