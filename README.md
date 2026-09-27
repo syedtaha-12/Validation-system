@@ -69,12 +69,17 @@ The full pipeline runs in under 1 second. To check that failures are caught, cha
 
 ---
 
-## Known Limitations & Next Steps
+## Fixed Issues
 
-- ~~Duplicates are not removed~~ **Fixed:** the validated view now keeps one row per `transaction_id`, and a check prints any duplicate IDs found in the raw data.
-- ~~Re-running `create_db.py` duplicates every row~~ **Fixed:** it now drops, recreates and reloads `transactions_raw` from `transactions.csv` on each run.
+- **Duplicate rows were not removed.** The validated view now keeps one row per `transaction_id`, and a check prints any duplicate IDs found in the raw data.
+- **Re-running `create_db.py` duplicated every row.** It now drops, recreates and reloads `transactions_raw` from `transactions.csv` on each run.
+- **Floating-point amounts were compared with `==`.** Summing thousands of floats in a different order causes small rounding differences, which made reconciliation fail at scale. Amounts are now stored and reconciled as integer cents, so totals match exactly at any volume. Reports are exported as 2-decimal amounts.
+
+---
+
+## Known Limitations
+
 - **Negative amounts are treated as invalid.** This is a business rule chosen for this dataset. In a real bank, negatives could be valid withdrawals or refunds, so this rule would be confirmed with the business team.
-- ~~Floating-point amounts are compared with `==`~~ **Fixed:** amounts are stored and reconciled as integer cents, so totals match exactly at any volume. Summing thousands of floats in a different order causes small rounding differences, which made reconciliation fail at scale. Reports are exported as 2-decimal amounts.
 
 ---
 
