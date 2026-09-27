@@ -12,19 +12,20 @@ CREATE TABLE daily_summary AS
 SELECT
     date,
     COUNT(*) AS transaction_count,
-    SUM(amount) AS total_amount
+    SUM(amount_cents) AS total_amount_cents
 FROM transactions_validated
-GROUP BY date;
+GROUP BY date
+ORDER BY date;
 """)
 
 conn.commit()
 
-# 3) Quick verification output
-cur.execute("SELECT * FROM daily_summary;")
-rows = cur.fetchall()
+# 3) Quick verification output (first few rows only)
+cur.execute("SELECT COUNT(*) FROM daily_summary;")
+print("daily_summary rows:", cur.fetchone()[0])
 
-print("daily_summary rows:")
-for r in rows:
-    print(r)
+cur.execute("SELECT * FROM daily_summary LIMIT 5;")
+for r in cur.fetchall():
+    print(" ", r)
 
 conn.close()

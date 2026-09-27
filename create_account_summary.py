@@ -12,7 +12,7 @@ CREATE TABLE account_summary AS
 SELECT
     account_id,
     COUNT(*) AS transaction_count,
-    SUM(amount) AS total_amount
+    SUM(amount_cents) AS total_amount_cents
 FROM transactions_validated
 GROUP BY account_id
 ORDER BY account_id;
@@ -20,12 +20,12 @@ ORDER BY account_id;
 
 conn.commit()
 
-# Quick verification
-cur.execute("SELECT * FROM account_summary;")
-rows = cur.fetchall()
+# Quick verification (first few rows only)
+cur.execute("SELECT COUNT(*) FROM account_summary;")
+print("account_summary rows:", cur.fetchone()[0])
 
-print("account_summary rows:")
-for r in rows:
-    print(r)
+cur.execute("SELECT * FROM account_summary LIMIT 5;")
+for r in cur.fetchall():
+    print(" ", r)
 
 conn.close()

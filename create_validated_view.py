@@ -7,10 +7,10 @@ cur.execute("DROP VIEW IF EXISTS transactions_validated;")
 
 cur.execute("""
 CREATE VIEW transactions_validated AS
-SELECT *
+SELECT transaction_id, account_id, amount_cents, date
 FROM transactions_raw
-WHERE amount IS NOT NULL
-  AND amount >= 0
+WHERE amount_cents IS NOT NULL
+  AND amount_cents >= 0
   AND rowid IN (
       SELECT MIN(rowid)
       FROM transactions_raw
@@ -25,7 +25,14 @@ FROM transactions_raw
 GROUP BY transaction_id
 HAVING COUNT(*) > 1;
 """)
-print("Duplicate transaction IDs:", cur.fetchall())
+dupes = cur.fetchall()
+print(f"Duplicate transaction IDs: {len(dupes)}", dupes[:10], "..." if len(dupes) > 10 else "")
+
+cur.execute("SELECT COUNT(*) FROM transactions_raw WHERE amount_cents IS NULL;")
+print("Missing amounts:", cur.fetchone()[0])
+
+cur.execute("SELECT COUNT(*) FROM transactions_raw WHERE amount_cents < 0;")
+print("Negative amounts:", cur.fetchone()[0])
 
 # Quick check
 cur.execute("SELECT COUNT(*) FROM transactions_raw;")

@@ -1,4 +1,5 @@
 import sqlite3
+import sys
 
 conn = sqlite3.connect("banking_qa.db")
 cur = conn.cursor()
@@ -8,10 +9,9 @@ cur.execute("""
 SELECT
   date,
   COUNT(*) AS src_count,
-  COALESCE(SUM(amount), 0) AS src_total
+  COALESCE(SUM(amount_cents), 0) AS src_total
 FROM transactions_validated
-GROUP BY date
-ORDER BY date;
+GROUP BY date;
 """)
 src_rows = cur.fetchall()
 
@@ -20,9 +20,8 @@ cur.execute("""
 SELECT
   date,
   transaction_count AS rpt_count,
-  COALESCE(total_amount, 0) AS rpt_total
-FROM daily_summary
-ORDER BY date;
+  COALESCE(total_amount_cents, 0) AS rpt_total
+FROM daily_summary;
 """)
 rpt_rows = cur.fetchall()
 
@@ -34,24 +33,23 @@ rpt = {d: (c, t) for (d, c, t) in rpt_rows}
 
 all_dates = sorted(set(src.keys()) | set(rpt.keys()))
 
+# Only mismatches are printed, so the output stays readable at any volume.
 print("=== Date-level Reconciliation ===")
-all_pass = True
+failures = 0
 
 for d in all_dates:
     src_count, src_total = src.get(d, (0, 0))
     rpt_count, rpt_total = rpt.get(d, (0, 0))
 
-    count_match = (src_count == rpt_count)
-    total_match = (src_total == rpt_total)
+    if (src_count, src_total) != (rpt_count, rpt_total):
+        failures += 1
+        print(f"\nDate: {d}  FAIL")
+        print(f"  Source (validated) -> count={src_count}, total_cents={src_total}")
+        print(f"  Report (summary)   -> count={rpt_count}, total_cents={rpt_total}")
 
-    status = "PASS" if (count_match and total_match) else "FAIL"
-    if status == "FAIL":
-        all_pass = False
-
-    print(f"\nDate: {d}")
-    print(f"  Source (validated) -> count={src_count}, total={src_total}")
-    print(f"  Report (summary)   -> count={rpt_count}, total={rpt_total}")
-    print(f"  Status: {status}")
+print(f"Dates checked: {len(all_dates)} | mismatches: {failures}")
 
 print("\n=== Overall Status ===")
-print("REC-004 (By Date):", "PASS" if all_pass else "FAIL")
+print("REC-004 (By Date):", "PASS" if failures == 0 else "FAIL")
+
+sys.exit(0 if failures == 0 else 1)
