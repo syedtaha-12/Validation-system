@@ -50,6 +50,6 @@ for d in all_dates:
 print(f"Dates checked: {len(all_dates)} | mismatches: {failures}")
 
 print("\n=== Overall Status ===")
-print("REC-004 (By Date):", "PASS" if failures == 0 else "FAIL")
+print("REC-003 (By Date):", "PASS" if failures == 0 else "FAIL")
 
 sys.exit(0 if failures == 0 else 1)

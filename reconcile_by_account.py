@@ -48,6 +48,6 @@ for acc in all_accounts:
 print(f"Accounts checked: {len(all_accounts)} | mismatches: {failures}")
 
 print("\n=== Overall Status ===")
-print("REC-005 (By Account):", "PASS" if failures == 0 else "FAIL")
+print("REC-004 (By Account):", "PASS" if failures == 0 else "FAIL")
 
 sys.exit(0 if failures == 0 else 1)
