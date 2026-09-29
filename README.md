@@ -15,6 +15,7 @@ generate_transactions.py  (synthetic 5,000+ row dataset)
   → transactions_validated  (SQL view: removes duplicates and invalid amounts)
   → daily_summary / account_summary  (reporting tables)
   → CSV reports             (ready for Power BI or other BI tools)
+  → Power BI dashboard      (checked against the database by verify_dashboard.py)
 ```
 
 ---
@@ -29,6 +30,7 @@ generate_transactions.py  (synthetic 5,000+ row dataset)
    - `account_summary`: transaction count and total amount by account
 4. **Export** both reports to CSV for downstream use.
 5. **Reconcile:** check that the report totals match the validated source data.
+6. **Visualize & verify:** build a Power BI dashboard on the data, then run `verify_dashboard.py` to print the numbers each visual should show, calculated straight from `transactions_validated`.
 
 ---
 
@@ -50,6 +52,12 @@ generate_transactions.py  (synthetic 5,000+ row dataset)
 ### Export Accuracy
 - Row counts **and amount totals** in each exported CSV match the database tables (`verify_exports.py`)
 
+### Dashboard Accuracy
+`verify_dashboard.py` prints the expected value for every visual on the Power BI dashboard, so each one can be checked by hand:
+- **Cards:** total amount, transaction count, average transaction and distinct accounts
+- **Line chart:** number of days plotted, plus the highest and lowest day
+- **Bar chart:** the top 10 accounts by total amount, in order
+
 ### Automation & Scale
 - Every check script exits with code `1` on FAIL, so `run_pipeline.py` stops at the first failing step.
 - Date and account reconciliations print only mismatches plus a summary line, so the output stays readable with thousands of rows.
@@ -65,7 +73,32 @@ On the generated dataset (5,050 raw rows → 4,799 validated rows; 50 duplicate 
 - ✅ REC-004: By account (250 accounts): PASS
 - ✅ Export row counts and totals: PASS
 
+- ✅ Power BI dashboard matches `verify_dashboard.py`: PASS
+
 The full pipeline runs in under 1 second. To check that failures are caught, change one account's total by 1 cent: REC-004 reports FAIL for that account.
+
+---
+
+## Dashboard Verification
+
+The Power BI dashboard built on the validated data:
+
+![Power BI dashboard](power_bi_ss.png)
+
+The expected values from `verify_dashboard.py`:
+
+![verify_dashboard.py output](verify_dashboard_terminal_output.png)
+
+Every visual matches the script:
+
+| Visual | Expected (`verify_dashboard.py`) | Dashboard |
+|--------|----------------------------------|-----------|
+| Total Amount | $11,937,570.78 | $11,937,570.78 ✅ |
+| Transactions | 4,799 | 4,799 ✅ |
+| Avg Transaction | $2,487.51 | $2,487.51 ✅ |
+| Accounts | 250 | 250 ✅ |
+| Line chart | 92 days, peak 2024-10-13 ($192,212.05), low 2024-10-01 ($80,355.32) | Oct–Dec 2024, peak ≈ $192K, low ≈ $80K ✅ |
+| Top 10 accounts | A0174, A0243, A0002, A0169, A0003, A0064, A0126, A0188, A0081, A0192 | Same accounts, same order ✅ |
 
 ---
 
@@ -89,6 +122,7 @@ The full pipeline runs in under 1 second. To check that failures are caught, cha
 - **SQL**
 - **SQLite**
 - **CSV-based reporting**
+- **Power BI** (dashboard)
 
 ---
 
@@ -118,6 +152,12 @@ python verify_exports.py
 python reconcile_totals.py
 python reconcile_by_date.py
 python reconcile_by_account.py
+```
+
+To check the Power BI dashboard, run the script below and compare each line with the matching visual:
+
+```bash
+python verify_dashboard.py
 ```
 
 Every step rebuilds its own table or view, so you can re-run the pipeline without deleting `banking_qa.db` first.
